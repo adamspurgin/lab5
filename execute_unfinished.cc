@@ -7,6 +7,8 @@ unsigned int signExtend16to32ui(short i) {
   return static_cast<unsigned int>(static_cast<int>(i));
 }
 
+	//this is a new comment
+
 void execute() {
   Data32 instr = imem[pc];
   GenericType rg(instr);
@@ -34,8 +36,8 @@ void execute() {
     }
     break;
   case OP_ANDI:   //not sure if works
-	rf.write(ri.rt, rf[ri.rs] & ri.imm);
-	break;
+	 rf.write(ri.rt, rf[ri.rs] & ri.imm);
+	 break;
   case OP_ADDIU:
     rf.write(ri.rt, rf[ri.rs] + signExtend16to32ui(ri.imm));
     break;
