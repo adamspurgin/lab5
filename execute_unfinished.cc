@@ -28,6 +28,8 @@ void execute() {
     case SP_SLL:
       rf.write(rt.rd, rf[rt.rt] << rt.sa);
       break;
+    case SP_AND:
+	  rf.wr
     default:
       cout << "Unsupported instruction: ";
       instr.printI(instr);
@@ -57,6 +59,8 @@ void execute() {
 	caches.access(addr);
 	dmem.write(addr, rf[ri.rt]);
 	break;
+  case OP_LBU:
+	break;
   case OP_LW:
     addr = rf[ri.rs] + signExtend16to32ui(ri.imm);
     caches.access(addr);
@@ -67,6 +71,42 @@ void execute() {
 	caches.access(addr);
 	rf.write(ri.rt, dmem[addr]);
 	break;
+  case: OP_LB:
+    addr = rf[ri.rs] + signExtend16to32ui(ri.imm);
+    caches.access(addr);
+    rf.write(ri.rt, dmem[addr]);
+    break;
+  case: OP_SLTI:
+	int tempval = (ri.rs < ri.imm)?1:0;
+	rf.write(ri.rt, tempval);
+	break;
+  case: SLTIU
+	int tempval = (ri.rs < signExtend16to32ui(ri.im))?1:0;
+	rf.write(ri.rt, tempval);
+	break;
+  case: OP_BNE:
+	if(ri.rs != ri.rt)
+		pc += ri.imm;
+	break;
+  case: BEQ
+	if(ri.rs == ri.rt)
+		pc += ri.imm*4;
+	break;
+  case: BLEZ
+	if(ri.rs < 0)
+		pc += ri.imm*4;
+	break;
+  case: LUI
+	rf.write(ri.rt, ri.imm << 16);
+	break;
+  case: JAL
+  case: J
+	pc = rj.target;
+	break;
+  case: ADDU
+  case: SLT
+  case: JR
+  case: SLL
   default:
     cout << "Unsupported instruction: ";
     instr.printI(instr);
