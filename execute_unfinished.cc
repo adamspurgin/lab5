@@ -40,13 +40,13 @@ void execute() {
     }
     break;
   case OP_ADDIU:
-    rf.write(ri.rt, rf[ri.rs] + signExtend16to32ui(ri.imm));
+    rf.write(ri.rt, rf[ri.rs] + ri.imm);
     break;
   case OP_ORI:
 	rf.write(ri.rt, rf[ri.rs] | ri.imm);
 	break;
   case OP_SLTI:
-	rf.write(ri.rt, (ri.rs<ri.imm)?1:0);
+	rf.write(ri.rt, (rf[ri.rs]<ri.imm)?1:0);
 	break;
   case OP_SLTIU:			//not sure about this one
 	rf.write(ri.rt, (ri.rs<signExtend16to32ui(ri.imm))?1:0);
@@ -59,13 +59,15 @@ void execute() {
   case OP_SB:					//still not sure about this one
 	addr = rf[ri.rs] + signExtend16to32ui(ri.imm);
 	caches.access(addr);
-	dmem.write(addr, rf[ri.rt].data_ubyte4);
+	dmem.write(addr, rf[ri.rt].data_ubyte4(1));
 	break;
   case OP_LUI:
 	addr = rf[ri.rs] + signExtend16to32ui(ri.imm);
 	caches.access(addr);
 	rf.write(ri.rt, dmem[addr].data_uint());
+	break;
   case OP_LW:
+	stats
     addr = rf[ri.rs] + signExtend16to32ui(ri.imm);
     caches.access(addr);
     rf.write(ri.rt, dmem[addr]);
@@ -73,30 +75,64 @@ void execute() {
   case OP_LB:					//still not sure about this one
 	addr = rf[ri.rs] + signExtend16to32ui(ri.imm);
 	caches.access(addr);
-	rf.write(ri.rt, signExtend16to32ui(dmem[addr].data_ubyte4));
+	rf.write(ri.rt, dmem[addr].data_ubyte4(1));
+	break;
   case OP_LBU:					//still not sure about this one
 	addr = rf[ri.rs] + signExtend16to32ui(ri.imm);
 	caches.access(addr);
-	rf.write(ri.rt, dmem[addr].data_ubyte4);
+	rf.write(ri.rt, signExtend16to32ui(dmem[addr].data_ubyte4(1)));
 	break;
   case OP_BNE:					//still not sure about this one
 	if(rf[ri.rt] != rf[ri.rs])
-		pc.write(pc.d + signExtend16to32ui(ri.imm));
+	{
+	  if(ri.imm > 0)
+		stats.numForwardBranchesTaken++;
+	  else stats.numBackwardBranchesTaken++;
+	  pc.write((int)pc + ri.imm*4);
+    }
+    else
+    {
+	  if(ri.imm > 0)
+		stats.numForwardBranchesNotTaken++;
+	  else stats.numBackwardBranchesNotTaken++;
+	}
 	break;
   case OP_BEQ:					//still not sure about this one
-	if(rf[ri.rt] != 0)
-		pc.write(signExtend16to32ui(ri.imm));
+    if((int)rf[ri.rt] == rf[ri.rs])
+    {
+	  if(ri.imm > 0)
+		stats.numForwardBranchesTaken++;
+	  else stats.numBackwardBranchesTaken++;
+	  pc.write((int)pc + ri.imm*4);
+	}
+	else
+    {
+	  if(ri.imm > 0)
+		stats.numForwardBranchesNotTaken++;
+	  else stats.numBackwardBranchesNotTaken++;
+	}
 	break;
   case OP_BLEZ: 				//still not sure about this one
 	if(rf[ri.rt] <= 0)
-		pc.write(signExtend16to32ui(ri.imm));
+	{
+	  if(ri.imm > 0)
+		stats.numForwardBranchesTaken++;
+	  else stats.numBackwardBranchesTaken++;
+	  pc.write((int)pc + ri.imm*4);
+	}
+	else
+    {
+	  if(ri.imm > 0)
+		stats.numForwardBranchesNotTaken++;
+	  else stats.numBackwardBranchesNotTaken++;
+	}	
 	break;
   case OP_J:
-	pc.write(rj.target);
+    pc.write(4*rj.target);
 	break;
   case OP_JAL:
-	rf.write(31, pc.d);
-	pc.write(signExtend16to32ui(ri.imm));
+    rf.write(31, (int)pc);
+	pc.write(signExtend16to32ui(ri.imm)*4);
 	break;
   default:
     cout << "Unsupported instruction: ";

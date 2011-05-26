@@ -1,5 +1,5 @@
 TARGETS         = mipsim
-SRCS            = classify.cc execute.cc main.cc mipsim.cc parse.cc
+SRCS            = classify.cc execute_unfinished.cc main.cc mipsim_unfinished.cc parse.cc
 HEADERS         = mipsim.hpp
 OBJS            = $(SRCS:.cc=.o)
 srcdir          = .
